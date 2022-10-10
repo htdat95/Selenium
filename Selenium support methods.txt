@@ -1,0 +1,141 @@
+package supports;
+
+import io.github.bonigarcia.wdm.WebDriverManager;
+import org.apache.commons.io.FileUtils;
+import org.openqa.selenium.*;
+import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.chrome.ChromeOptions;
+import org.openqa.selenium.firefox.FirefoxDriver;
+import org.openqa.selenium.firefox.FirefoxOptions;
+import org.openqa.selenium.interactions.Actions;
+import org.openqa.selenium.safari.SafariDriver;
+import org.openqa.selenium.support.ui.Select;
+import org.openqa.selenium.support.ui.WebDriverWait;
+
+import java.io.File;
+import java.io.IOException;
+import java.time.Duration;
+import java.util.List;
+
+public class Browser {
+    private static WebDriver driver;
+    public static WebDriverWait wait;
+    public static Actions mouse;
+    public static final int TIMEOUT = 60;
+
+    public static WebDriver openBrowser(String name){
+        switch (name.toLowerCase()){
+            case "firefox":{
+                WebDriverManager.firefoxdriver().setup();
+                driver = new FirefoxDriver();
+                break;
+            }
+            case "safari":{
+                WebDriverManager.safaridriver().setup();
+                driver = new SafariDriver();
+                break;
+            }
+            default:{
+                WebDriverManager.chromedriver().setup();
+                driver = new ChromeDriver();
+                break;
+            }
+        }
+        wait = new WebDriverWait(driver, Duration.ofSeconds(TIMEOUT));
+        driver.manage().timeouts().scriptTimeout(Duration.ofSeconds(TIMEOUT));
+        driver.manage().timeouts().pageLoadTimeout(Duration.ofSeconds(TIMEOUT));
+        mouse = new Actions(getDriver());
+        return driver;
+    }
+    public static WebDriver getDriver() {
+        return driver;
+    }
+    public static WebDriver openBrowser(String name, boolean setHeadless) {
+        switch (name.toLowerCase()) {
+            case "firefox": {
+                WebDriverManager.firefoxdriver().setup();
+                FirefoxOptions firefoxOptions = new FirefoxOptions();
+                firefoxOptions.setHeadless(setHeadless);
+                driver = new FirefoxDriver(firefoxOptions);
+                break;
+            }
+            default: {
+                WebDriverManager.chromedriver().setup();
+                ChromeOptions chromeOptions = new ChromeOptions();
+                chromeOptions.setHeadless(setHeadless);
+                driver = new ChromeDriver(chromeOptions);
+                break;
+            }
+        }
+        wait = new WebDriverWait(driver, Duration.ofSeconds(TIMEOUT));
+        driver.manage().timeouts().scriptTimeout(Duration.ofSeconds(TIMEOUT));
+        driver.manage().timeouts().pageLoadTimeout(Duration.ofSeconds(TIMEOUT));
+        return driver;
+    }
+
+    public static void visit(String url){
+        driver.manage().window().maximize();
+        driver.get(url);
+    }
+    public static void captureScreenShot(String name) {
+        File scrFile = ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);
+        try {
+            FileUtils.copyFile(scrFile, new File("./target/screenshots/" + name + "-" + System.currentTimeMillis() + ".png"));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static void quit() {
+        if (driver != null) {
+            driver.quit();
+        }
+    }
+    public static void switchToPage(String page) throws InterruptedException {
+        driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
+        for (String windowHandle : driver.getWindowHandles()) {
+            driver.switchTo().window(windowHandle);
+            String pageTittle= driver.getTitle();
+            if(pageTittle.contains(page)){
+                break;
+            }
+        }
+        Thread.sleep(2000);
+    }
+
+    public static boolean isDisplayed(By locator) {
+        return driver.findElement(locator).isDisplayed();
+    }
+    public static void click(By locator) {
+        driver.findElement(locator).click();
+    }
+    public static void fill(By locator, String withText) {
+        driver.findElement(locator).clear();
+        driver.findElement(locator).sendKeys(withText);
+    }
+    public static WebElement find(By locator) {
+        return driver.findElement(locator);
+    }
+    public static void dropdown(By locator, String withText) {
+        WebElement select = driver.findElement(locator);
+        Select dropdown = new Select(select);
+        dropdown.selectByVisibleText(withText);
+    }
+    public static String getText(By locator) {
+        return driver.findElement(locator).getText();
+    }
+    public static List<WebElement> all(By locator) {
+        return driver.findElements(locator);
+    }
+
+    public static int count(By locator) {
+        return all(locator).size();
+    }
+    public static void conTextClick(By locator){
+        Actions actions = new Actions(driver);
+        actions.contextClick(driver.findElement(locator)).perform();
+    }
+    public static void hover(By locator) {
+        mouse.moveToElement(find(locator)).perform();
+    }
+}
