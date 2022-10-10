@@ -132,8 +132,11 @@ public class Browser {
         return all(locator).size();
     }
     public static void conTextClick(By locator){
-        Actions actions = new Actions(driver);
-        actions.contextClick(driver.findElement(locator)).perform();
+        mouse.contextClick(driver.findElement(locator)).perform();
+    }
+
+    public static void doubleClick(By locator){
+        mouse.doubleClick(driver.findElement(locator)).perform();
     }
     public static void hover(By locator) {
         mouse.moveToElement(find(locator)).perform();
