@@ -91,16 +91,14 @@ public class Browser {
             driver.quit();
         }
     }
-    public static void switchToPage(String page) throws InterruptedException {
-        driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
+    public static void switchToPage(String pageTitle)   {
         for (String windowHandle : driver.getWindowHandles()) {
             driver.switchTo().window(windowHandle);
             String pageTittle= driver.getTitle();
-            if(pageTittle.contains(page)){
+            if(pageTittle.contains(pageTitle)){
                 break;
             }
         }
-        Thread.sleep(2000);
     }
 
     public static boolean isDisplayed(By locator) {
